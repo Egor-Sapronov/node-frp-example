@@ -11,12 +11,17 @@ function sendHello(e) {
     e.res.end('Hello World\n');
 }
 
-$requests
+const subscription = $requests
     .tap(e => console.log('request to', e.req.url)) // eslint-disable-line no-console
-    .subscribe(sendHello);
+    .subscribe(
+        sendHello,
+        console.error, // eslint-disable-line no-console
+        () => subscription.dispose());
 
 http.createServer((req, res) => {
     $requests.onNext({ req, res });
 }).listen(port, hostname, () => {
     console.log(`Server running at http://${hostname}:${port}/`); // eslint-disable-line no-console
 });
+
+process.on('exit', () => subscription.dispose());
